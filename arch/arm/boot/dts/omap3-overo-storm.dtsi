@@ -9,6 +9,21 @@
 #include "omap36xx.dtsi"
 #include "omap3-overo-base.dtsi"
 
+&omap3_pmx_core {
+	wlcore_irq_pins: pinmux_wlcore_irq_pins {
+		pinctrl-single,pins = <
+			OMAP3_CORE1_IOPAD(0x20bc, PIN_INPUT | MUX_MODE4)		/* gpmc_ncs7.gpio_58 */
+		>;
+	};
+
+	wlcore_gpio_pins: pinmux_wlcore_gpio_pins {
+		pinctrl-single,pins = <
+			/* BT enable */
+			OMAP3_CORE1_IOPAD(0x219c, PIN_OUTPUT_PULLUP | MUX_MODE4) 	/* uart3_rts_sd.gpio_164 */
+		>;
+	};
+};
+
 &omap3_pmx_core2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <
@@ -26,21 +41,30 @@
 		>;
 	};
 
-	w3cbw003c_2_pins: pinmux_w3cbw003c_2_pins {
+	wlcore_2_gpio_pins: pinmux_wlcore_2_gpio_pins {
 		pinctrl-single,pins = <
-			OMAP3630_CORE2_IOPAD(0x25e0, PIN_OUTPUT | MUX_MODE4)		/* etk_d2.gpio_16 */
+			/* WL enable */
+			OMAP3630_CORE2_IOPAD(0x25e0, PIN_OUTPUT_PULLUP | MUX_MODE4)	/* etk_d2.gpio_16 */
 		>;
 	};
 };
 
-&mmc2{
+&wlcore_wl_en {
+	pinctrl-names = "default";
+	pinctrl-0 = <&wlcore_gpio_pins &wlcore_2_gpio_pins>;
+};
+
+&mmc2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_pins &wlcore_irq_pins>;
+
 	#address-cells = <1>;
 	#size-cells = <0>;
 	wlcore: wlcore@0 {
 		compatible = "ti,wl1831";
 		reg = <2>;
 		interrupt-parent = <&gpio2>;
-		interrupts = <26 IRQ_TYPE_LEVEL_HIGH>;
+		interrupts = <26 IRQ_TYPE_EDGE_RISING>; /* gpio_58 */
 	};
 
 };
