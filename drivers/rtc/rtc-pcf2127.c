@@ -1538,8 +1538,10 @@ static int pcf2127_i2c_probe(struct i2c_client *client)
 	};
 	const struct pcf21xx_config *variant;
 
-	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
+		dev_err(&client->dev, "Adapter does not support I2C_FUNC_I2C\n");
 		return -ENODEV;
+	}
 
 	if (client->dev.of_node) {
 		variant = of_device_get_match_data(&client->dev);
