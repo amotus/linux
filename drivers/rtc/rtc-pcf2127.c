@@ -1540,7 +1540,7 @@ static int pcf2127_i2c_probe(struct i2c_client *client)
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
 		dev_err(&client->dev, "Adapter does not support I2C_FUNC_I2C\n");
-		return -ENODEV;
+		return -EOPNOTSUPP;
 	}
 
 	if (client->dev.of_node) {
