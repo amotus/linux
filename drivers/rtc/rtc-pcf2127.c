@@ -1184,6 +1184,54 @@ static int pcf2127_enable_ts(struct device *dev, int ts_id)
 	return ret;
 }
 
+/*
+ * By default, do not reconfigure or set default power management mode,
+ * unless explicitly requested via DT properties:
+ *   battery-switch-over
+ *   battery-low-detect
+ */
+static int pcf2127_configure_power_management(struct device *dev)
+{
+	u32 bat_sw_over, bat_low_detect;
+	u8 pwrmng;
+	int ret;
+
+	/*
+	 * The PWRMNG field is defined in a peculiar way for PCF21XX
+	 * devices: there is no individual bit defined for the
+	 * battery-switch-over or battery-low-detect functions.
+	 * Therefore, we require that both properties must be defined
+	 * to alter the PWRMNG field.
+	 */
+	if (device_property_read_u32(dev, "battery-switch-over", &bat_sw_over))
+		return 0;
+
+	if (device_property_read_u32(dev, "battery-low-detect",
+				     &bat_low_detect))
+		return 0;
+
+	if (!bat_sw_over) {
+		/*
+		 * If battery-switch-over is disabled, then the
+		 * battery-low-detect function is always disabled.
+		 */
+		pwrmng = BIT(2) | BIT(1) | BIT(0);
+	} else {
+		if (bat_low_detect)
+			pwrmng = 0;
+		else
+			pwrmng = BIT(0);
+	}
+
+	ret = pcf2127_pwrmng_set(dev, pwrmng);
+	if (ret < 0) {
+		dev_dbg(dev, "PWRMNG config failed\n");
+		return ret;
+	}
+
+	return 0;
+}
+
 /* Route all interrupt sources to INT A pin. */
 static int pcf2127_configure_interrupt_pins(struct device *dev)
 {
@@ -1265,6 +1313,12 @@ static int pcf2127_probe(struct device *dev, struct regmap *regmap,
 			return ret;
 		}
 		pcf2127->irq_enabled = true;
+	}
+
+	ret = pcf2127_configure_power_management(dev);
+	if (ret) {
+		dev_err(dev, "failed to configure power management\n");
+		return ret;
 	}
 
 	if (alarm_irq > 0 || device_property_read_bool(dev, "wakeup-source")) {
