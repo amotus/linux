@@ -250,6 +250,10 @@ static int pcf2127_rtc_read_time(struct device *dev, struct rtc_time *tm)
 	/*
 	 * Avoid reading CTRL2 register as it causes WD_VAL register
 	 * value to reset to 0 which means watchdog is stopped.
+	 *
+	 * Reading time/date registers (seconds through to years) should be made
+	 * in one single bulk access. Otherwise, it could result in the
+	 * time/date becoming corrupted.
 	 */
 	ret = regmap_bulk_read(pcf2127->regmap, pcf2127->cfg->reg_time_base,
 			       buf, sizeof(buf));
