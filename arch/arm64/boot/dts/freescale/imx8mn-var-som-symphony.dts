@@ -79,6 +79,10 @@
 };
 
 &ethphy {
+	/*
+	 * reset-gpios no longer necessary now that U-Boot autodetect the SOM
+	 * variant, and fixes the device tree with the proper PHY reset pin.
+	 */
 	leds {
 		#address-cells = <1>;
 		#size-cells = <0>;
