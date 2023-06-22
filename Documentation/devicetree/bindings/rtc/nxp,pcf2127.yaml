@@ -27,6 +27,10 @@ properties:
   interrupts:
     maxItems: 1
 
+  battery-low-detect: true
+
+  battery-switch-over: true
+
   start-year: true
 
   reset-source: true
