@@ -26,6 +26,25 @@ properties:
       0: not chargeable
       1: chargeable
 
+  battery-low-detect:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    enum: [0, 1]
+    description: |
+      For RTC devices supporting a backup battery/supercap, this flag can be
+      used to configure the battery low detection reporting function:
+      0: disabled
+      1: enabled
+
+  battery-switch-over:
+    $ref: /schemas/types.yaml#/definitions/uint32
+    enum: [0, 1]
+    description: |
+      For RTC devices supporting a backup battery/supercap, this flag can be
+      used to configure the battery switch over when the main voltage source is
+      turned off:
+      0: disabled
+      1: enabled
+
   quartz-load-femtofarads:
     description:
       The capacitive load of the quartz(x-tal), expressed in femto
