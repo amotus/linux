@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
+ * Supports Symphony evaluation board versions >= 1.4a.
+ *
  * Copyright (C) 2020 Krzysztof Kozlowski <krzk@kernel.org>
  */
 
@@ -7,6 +9,7 @@
 
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/phy/phy-imx8-pcie.h>
+#include <dt-bindings/usb/pd.h>
 #include "imx8mm-var-som.dtsi"
 #include "imx8mm-var-som-wifi-bt-iw61x.dtsi"
 
@@ -150,7 +153,13 @@
 		compatible = "nxp,ptn5150";
 		reg = <0x3d>;
 		interrupt-parent = <&gpio1>;
-		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+		/*
+		 * For Symphony board version <= 1.4, the PTN5150 IRQ pin is connected
+		 * to GPIO1_IO11 on the SoM (R106 present, R132 absent). From Symphony
+		 * board version >= 1.4a, the PTN5150 ID pin is connected to GPIO1_IO11
+		 * on the SoM (R106 absent, R132 present).
+		 */
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ptn5150>;
 
