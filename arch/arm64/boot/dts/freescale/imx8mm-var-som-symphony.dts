@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
+ * Supports Symphony evaluation board versions >= 1.4a.
+ *
  * Copyright (C) 2020 Krzysztof Kozlowski <krzk@kernel.org>
  */
 
@@ -142,12 +144,19 @@
 		};
 	};
 
-	/* USB Type-C Controller */
+	/*
+	 * USB Type-C Controller
+	 *
+	 * For Symphony board version <= 1.4, the PTN5150 IRQ pin is connected
+	 * to GPIO1_IO11 on the SoM (R106 present, R132 absent). From Symphony
+	 * board version >= 1.4a, the PTN5150 ID pin is connected to GPIO1_IO11
+	 * on the SoM (R106 absent, R132 present).
+	 */
 	ptn5150: typec@3d {
 		compatible = "nxp,ptn5150";
 		reg = <0x3d>;
 		interrupt-parent = <&gpio1>;
-		interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ptn5150>;
 
