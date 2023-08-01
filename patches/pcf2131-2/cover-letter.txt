@@ -1,0 +1,27 @@
+Hello,
+this patch series adds support for setting default battery-related
+functions for RTC devices.
+
+This evolved from previous discussions about PCF2127 and also when reviewing
+PCF2131 driver:
+
+Link: https://lore.kernel.org/linux-rtc/20190910143945.9364-1-bruno.thomsen@gmail.com/
+Link: https://lore.kernel.org/linux-rtc/20191211163354.GC1463890@piout.net/
+Link: https://lore.kernel.org/linux-rtc/20230123170731.6064430c50f5fb7b484d8734@hugovil.com/
+
+I decided to add these two new DT properties as generic RTC properties, in the
+hope that they can be reused by other RTC drivers if needed.
+
+Patch 1 adds two new DT properties to set battery-related functions. These
+properties are generic for all RTC devices.
+
+Patch 2 adds support for these two new DT properties to the PCF2127 driver.
+This is especially important for PCF2131 devices which have default PWRMNG
+values which disable battery-related functions.
+
+Thank you.
+
+Link: [v1] https://lore.kernel.org/all/20230802191153.952667-1-hugo@hugovil.com/
+
+Changes for V1:
+- ...
