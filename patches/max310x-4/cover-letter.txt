@@ -1,0 +1,16 @@
+Hello,
+this patch series brings a few fixes in the probing of the max310x driver.
+
+Patches 1 to 3 could be merged if deemed necessary and to facilitate stable
+kernel backporting.
+
+Note that I do not have access to a board with an actual max310x IC on it,
+but I have tested it by using i2c-stub to simulate the four ports on a
+virtual max14830 device.
+
+Thank you.
+
+Link: [v1] https://lore.kernel.org/all/20240116213001.3691629-1-hugo@hugovil.com
+
+Changes for V2:
+- ...
