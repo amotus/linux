@@ -1,0 +1,8 @@
+Hello,
+this patch series add a new GPIO charlieplex keypad driver.
+
+I have tested the driver on a custom board with a Solidrun RZ/G2LC SOM
+with three charlieplex keyboards, all connected thru a a PCA9416 I2C GPIO
+expander.
+
+Thank you.
