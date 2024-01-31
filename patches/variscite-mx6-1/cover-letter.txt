@@ -1,0 +1,7 @@
+Hello,
+this patch series improves supoport for different variants of the VAR-SOM-6UL.
+
+I have tested the driver on a Variscite concerto EVK board, as well as on a custom board
+with a VAR-SOM-6UL SOM.
+
+Thank you.
