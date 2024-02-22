@@ -1,0 +1,15 @@
+Hello,
+this patch series add a new I/O type for serial devices on a SPI/I2C bus.
+
+These changes are based on suggestions made by Ilpo Järvinen
+following this discussion:
+
+https://lore.kernel.org/lkml/2936e18f-44ea-faed-9fa0-2ddefe7c3194@linux.intel.com/raw
+
+I did not test the changes on a real SC16is7xx using the I2C interface. But
+I slighly modified the driver to be able to simulate an I2C device using
+i2c-stub. I was then able to instantiate a virtual I2C device without
+disturbing existing connection/communication between real SPI devices on
+/dev/ttySC0 and /dev/ttySC2 (using a loopback cable).
+
+Thank you.
