@@ -544,7 +544,11 @@ static bool sc16is7xx_regmap_noinc(struct device *dev, unsigned int reg)
 static int sc16is7xx_set_baud(struct uart_port *port, int baud)
 {
 	unsigned int prescaler = 1;
-	unsigned long clk = port->uartclk, div = clk / 16 / baud;
+	unsigned int sampling_rate = 16;
+	unsigned long clk = port->uartclk;
+	unsigned long div;
+
+	div = clk / sampling_rate / baud;
 
 	if (div >= BIT(16)) {
 		prescaler = 4;
@@ -566,7 +570,7 @@ static int sc16is7xx_set_baud(struct uart_port *port, int baud)
 	/* Restore access to general register set */
 	sc16is7xx_regs_unlock(port);
 
-	return DIV_ROUND_CLOSEST((clk / prescaler) / 16, div);
+	return DIV_ROUND_CLOSEST((clk / prescaler) / sampling_rate, div);
 }
 
 static void sc16is7xx_handle_rx(struct uart_port *port, unsigned int rxlen,
