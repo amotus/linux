@@ -2011,7 +2011,7 @@ static void uart_line_info(struct seq_file *m, struct uart_state *state)
 	if (!uport)
 		return;
 
-	seq_printf(m, "%u: uart:%s", uport->line, uart_type(uport));
+	seq_printf(m, "HUGO UPIO %u: uart:%s", uport->line, uart_type(uport));
 
 	mmio = uart_iotype_mmio(uport->iotype);
 
@@ -2500,7 +2500,7 @@ uart_report_port(struct uart_driver *drv, struct uart_port *port)
 				 " at I/O 0x%lx offset 0x%x", port->iobase, port->hub6);
 	}
 
-	pr_info("%s%s%s%s (irq = %u, base_baud = %u) is a %s\n",
+	pr_info("HUGO UPIO %s%s%s%s (irq = %u, base_baud = %u) is a %s\n",
 		port->dev ? dev_name(port->dev) : "",
 		port->dev ? ": " : "",
 		port->name,
@@ -2521,10 +2521,19 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
 {
 	unsigned int flags;
 
+	pr_err("%s(): entry\n", __func__);
+
+	pr_err("%s(): iotype = %d\n", __func__, port->iotype);
+	pr_err("%s(): iobase = %ld\n", __func__, port->iobase);
+	pr_err("%s(): mapbase = %d\n", __func__, port->mapbase);
+	pr_err("%s(): membase = %d\n", __func__, (u32)port->membase);
+
 	/* If there isn't a port here, don't do anything further. */
 	if (uart_iotype_mmio(port->iotype) || uart_iotype_legacy_io(port->iotype))
 		if (!port->iobase && !port->mapbase && !port->membase)
 			return;
+
+	pr_err("%s(): PT2\n", __func__);
 
 	/*
 	 * Now do the auto configuration stuff.  Note that config_port

@@ -83,8 +83,14 @@ static int serial_base_device_init(struct uart_port *port,
 		return -EPROBE_DEFER;
 	}
 
-	if (type == &serial_ctrl_type)
+	if (type == &serial_ctrl_type) {
+		dev_err(port->dev, "%s() CTRL, name = %s:%d\n", __func__,
+			dev_name(port->dev), ctrl_id );
 		return dev_set_name(dev, "%s:%d", dev_name(port->dev), ctrl_id);
+	}
+
+	dev_err(port->dev, "%s() PORT, name = %s:%d.%d\n", __func__,
+		dev_name(port->dev), ctrl_id, port_id );
 
 	if (type == &serial_port_type)
 		return dev_set_name(dev, "%s:%d.%d", dev_name(port->dev),
@@ -115,6 +121,8 @@ struct serial_ctrl_device *serial_base_ctrl_add(struct uart_port *port,
 {
 	struct serial_ctrl_device *ctrl_dev;
 	int err;
+
+	dev_err(port->dev, "%s() PT1\n", __func__);
 
 	ctrl_dev = kzalloc_obj(*ctrl_dev);
 	if (!ctrl_dev)
@@ -155,6 +163,8 @@ struct serial_port_device *serial_base_port_add(struct uart_port *port,
 	struct serial_port_device *port_dev;
 	int min = 0, max = -1;	/* Use -1 for max to apply IDA defaults */
 	int err;
+
+	dev_err(port->dev, "%s() PT1\n", __func__);
 
 	port_dev = kzalloc_obj(*port_dev);
 	if (!port_dev)
