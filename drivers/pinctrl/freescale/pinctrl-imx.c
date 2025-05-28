@@ -596,7 +596,7 @@ static int imx_pinctrl_parse_functions(struct device_node *np,
 	func->name = np->name;
 	func->ngroups = of_get_child_count(np);
 	if (func->ngroups == 0) {
-		dev_info(ipctl->dev, "no groups defined in %pOF\n", np);
+		dev_dbg(ipctl->dev, "no groups defined in %pOF\n", np);
 		return -EINVAL;
 	}
 
