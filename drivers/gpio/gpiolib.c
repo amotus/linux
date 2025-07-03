@@ -3345,7 +3345,6 @@ int gpiod_get_array_value_complex(bool raw, bool can_sleep,
 				  struct gpio_array *array_info,
 				  unsigned long *value_bitmap)
 {
-	struct gpio_chip *gc;
 	int ret, i = 0;
 
 	/*
@@ -3356,6 +3355,8 @@ int gpiod_get_array_value_complex(bool raw, bool can_sleep,
 	if (array_info && array_info->desc == desc_array &&
 	    array_size <= array_info->size &&
 	    (void *)array_info == desc_array + array_info->size) {
+		struct gpio_chip *gc;
+
 		if (!can_sleep)
 			WARN_ON(array_info->gdev->can_sleep);
 
