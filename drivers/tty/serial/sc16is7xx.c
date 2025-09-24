@@ -342,6 +342,14 @@ static void sc16is7xx_port_write(struct uart_port *port, u8 reg, u8 val)
 	regmap_write(one->regmap, reg, val);
 }
 
+static void sc16is7xx_port_update(struct uart_port *port, u8 reg,
+				  u8 mask, u8 val)
+{
+	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
+
+	regmap_update_bits(one->regmap, reg, mask, val);
+}
+
 static void sc16is7xx_fifo_read(struct uart_port *port, u8 *rxbuf, unsigned int rxlen)
 {
 	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
@@ -361,14 +369,6 @@ static void sc16is7xx_fifo_write(struct uart_port *port, u8 *txbuf, u8 to_send)
 		return;
 
 	regmap_noinc_write(one->regmap, SC16IS7XX_THR_REG, txbuf, to_send);
-}
-
-static void sc16is7xx_port_update(struct uart_port *port, u8 reg,
-				  u8 mask, u8 val)
-{
-	struct sc16is7xx_one *one = to_sc16is7xx_one(port);
-
-	regmap_update_bits(one->regmap, reg, mask, val);
 }
 
 static void sc16is7xx_power(struct uart_port *port, int on)
