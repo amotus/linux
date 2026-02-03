@@ -5,4 +5,10 @@ I have tested the driver on a custom board with a Solidrun RZ/G2LC SOM
 with three charlieplex keyboards, all connected thru a a PCA9416 I2C GPIO
 expander.
 
+Link: [v1] https://lore.kernel.org/linux-serial/20250924153740.806444-1-hugo@hugovil.com/raw
+
+Changes for v2:
+- Fix yamllint error for example
+- Remove unused debug variable (nkeys)
+
 Thank you.
