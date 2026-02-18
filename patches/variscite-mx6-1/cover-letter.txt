@@ -1,7 +1,53 @@
 Hello,
-this patch series improves supoport for different variants of the VAR-SOM-6UL.
+this patch series improves support for Variscite VAR-SOM-6UL based boards.
 
-I have tested the driver on a Variscite concerto EVK board, as well as on a custom board
-with a VAR-SOM-6UL SOM.
+The first two patches fix DT/dmesg warnings.
+
+The next patches fix the incorrect use of VAR-SOM-MX6UL to refer to the
+VAR-SOM-6UL.
+
+The next patches add support for the imx6ull CPU variant of the VAR-SOM-6UL.
+
+Then improves/fixes the following features/options that are currently not
+working on the concerto EVK board:
+  - ethernet ports ENET1
+  - LVDS display panel
+  - Wifi/Bt
+
+Note that the previous configuration of the optional Wifi/Bluetooth module
+was copied from the original Variscite kernel tree, and required custom
+shell scripts to properly configure the Wifi/Bluetooth module.
+
+Also factor out optional features into separate DTSI include files, so it will
+be easier to support them for other boards, and to make sure they are not
+unconditionnally enabled.
+
+I have tested these changes on a Variscite concerto EVK board using a
+VAR-SOM-6UL with the following options:
+  - EC (ethernet phy on SOM)
+  - LD (LVDS encoder assembled on SOM)
+  - WBD (Wi-Fi 802.11 ac/a/b/g/n and Bluetooth 5.2/BLE on SOM)
+Result of tests:
+  - Both ethernet ports Ok
+  - LVDS display panel Ok
+  - Wifi/Bt Ok
+
+Also tested on a custom board with a VAR-SOM-6UL SOM (will be submitted in
+a future series).
 
 Thank you.
+
+Link: [v1] https://lore.kernel.org/all/20260302190953.669325-1-hugo@hugovil.com/
+Link: [v2] https://lore.kernel.org/all/20260305180651.1827087-1-hugo@hugovil.com/
+
+Changes for v3:
+- Fix patch #4 commit message (Krzysztof)
+- Add CPU variant type in description for imx6ul*-var-som.dtsi
+
+Changes for v2:
+- Place imx6ull-var-som-concerto.dtb in alphabetical order (Frank)
+- s/include/dtsi in commit msgs (Frank)
+- Clarify and improve patches to change VAR-SOM-MX6UL (Krzysztof)
+- Collect tags for some acked patches (Krzysztof)
+- Reorder pinctrl_gpio_leds in separate patch (Frank)
+- Improve git commit messages ((Frank)/Krzysztof)
