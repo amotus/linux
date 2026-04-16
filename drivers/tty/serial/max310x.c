@@ -665,6 +665,102 @@ static int max310x_set_ref_clk(struct device *dev, struct max310x_port *s,
 	return 0;
 }
 
+static int max310x_update_best_err_original(unsigned long f, long *besterr)
+{
+	/* Use high-enough baudrate to calculate error */
+	long err = f % (460800 * 16);
+
+	if ((*besterr < 0) || (*besterr > err)) {
+		*besterr = err;
+		return 0;
+	}
+
+	return 1;
+}
+
+#define MAX310X_PORT_STARTUP_WAIT_RETRIES	20 /* Number of retries */
+#define MAX310X_PORT_STARTUP_WAIT_DELAY_MS	10 /* Delay between retries */
+#define MAX310X_XTAL_WAIT_RETRIES	20 /* Number of retries */
+#define MAX310X_XTAL_WAIT_DELAY_MS	10 /* Delay between retries */
+
+static s32 max310x_set_ref_clk_original(struct device *dev, struct max310x_port *s,
+					unsigned long freq, bool xtal)
+{
+	unsigned int div, clksrc, pllcfg = 0;
+	long besterr = -1;
+	unsigned long fdiv, fmul, bestfreq = freq;
+
+	/* First, update error without PLL */
+	max310x_update_best_err_original(freq, &besterr);
+
+	/* Try all possible PLL dividers */
+	for (div = 1; (div <= 63) && besterr; div++) {
+		fdiv = DIV_ROUND_CLOSEST(freq, div);
+
+		/* Try multiplier 6 */
+		fmul = fdiv * 6;
+		if ((fdiv >= 500000) && (fdiv <= 800000))
+			if (!max310x_update_best_err_original(fmul, &besterr)) {
+				pllcfg = (0 << 6) | div;
+				bestfreq = fmul;
+			}
+		/* Try multiplier 48 */
+		fmul = fdiv * 48;
+		if ((fdiv >= 850000) && (fdiv <= 1200000))
+			if (!max310x_update_best_err_original(fmul, &besterr)) {
+				pllcfg = (1 << 6) | div;
+				bestfreq = fmul;
+			}
+		/* Try multiplier 96 */
+		fmul = fdiv * 96;
+		if ((fdiv >= 425000) && (fdiv <= 1000000))
+			if (!max310x_update_best_err_original(fmul, &besterr)) {
+				pllcfg = (2 << 6) | div;
+				bestfreq = fmul;
+			}
+		/* Try multiplier 144 */
+		fmul = fdiv * 144;
+		if ((fdiv >= 390000) && (fdiv <= 667000))
+			if (!max310x_update_best_err_original(fmul, &besterr)) {
+				pllcfg = (3 << 6) | div;
+				bestfreq = fmul;
+			}
+	}
+
+	/* Configure clock source */
+	clksrc = MAX310X_CLKSRC_EXTCLK_BIT | (xtal ? MAX310X_CLKSRC_CRYST_BIT : 0);
+
+	/* Configure PLL */
+	if (pllcfg) {
+		clksrc |= MAX310X_CLKSRC_PLL_BIT;
+		regmap_write(s->regmap, MAX310X_PLLCFG_REG, pllcfg);
+	} else
+		clksrc |= MAX310X_CLKSRC_PLLBYP_BIT;
+
+	regmap_write(s->regmap, MAX310X_CLKSRC_REG, clksrc);
+
+	/* Wait for crystal */
+	if (xtal) {
+		bool stable = false;
+		unsigned int try = 0, val = 0;
+
+		do {
+			msleep(MAX310X_XTAL_WAIT_DELAY_MS);
+			regmap_read(s->regmap, MAX310X_STS_IRQSTS_REG, &val);
+
+			if (val & MAX310X_STS_CLKREADY_BIT)
+				stable = true;
+		} while (!stable && (++try < MAX310X_XTAL_WAIT_RETRIES));
+
+		if (!stable)
+			return dev_err_probe(dev, -EAGAIN,
+					     "clock is not stable\n");
+	}
+
+	return bestfreq;
+}
+
+
 static void max310x_batch_write(struct uart_port *port, u8 *txbuf, unsigned int len)
 {
 	struct max310x_one *one = to_max310x_port(port);
