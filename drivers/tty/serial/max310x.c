@@ -27,6 +27,9 @@
 #include <linux/spi/spi.h>
 #include <linux/uaccess.h>
 
+#define DEBUG_MODE_TABLE 0
+#define DEBUG_MODE_LOOP  1
+
 #define MAX310X_NAME			"max310x"
 #define MAX310X_MAJOR			204
 #define MAX310X_MINOR			209
@@ -661,6 +664,15 @@ static int max310x_set_ref_clk(struct device *dev, struct max310x_port *s,
 	}
 
 	*fref = cfg.fref;
+
+#if 0
+	dev_dbg(dev, "  fref:    %d\n", (unsigned int) cfg.fref);
+	if (cfg.fref > 96000000)
+		dev_err(dev, "  TOO HIGH\n");
+	dev_dbg(dev, "  err:     %d\n", cfg.err);
+	dev_dbg(dev, "  plldiv:  %d\n", cfg.prediv);
+	dev_dbg(dev, "  pllmult: %d\n", cfg.pll_mult);
+#endif
 
 	return 0;
 }
@@ -1413,7 +1425,7 @@ static int max310x_probe(struct device *dev, const struct max310x_devtype *devty
 	/* Always ask for fixed clock rate from a property. */
 	device_property_read_u32(dev, "clock-frequency", &uartclk);
 
-	xtal = device_property_match_string(dev, "clock-names", "osc") < 0;
+	xtal = false;
 	if (xtal)
 		s->clk = devm_clk_get_optional(dev, "xtal");
 	else
@@ -1429,8 +1441,8 @@ static int max310x_probe(struct device *dev, const struct max310x_devtype *devty
 	if (freq == 0)
 		freq = uartclk;
 	if (freq == 0) {
-		ret = dev_err_probe(dev, -EINVAL, "Cannot get clock rate\n");
-		goto out_clk;
+		freq = 12000000; /* I2C stub */
+		dev_warn(dev, "I2C stub hardcoded freq = %d\n", freq);
 	}
 
 	if (xtal) {
@@ -1479,11 +1491,55 @@ static int max310x_probe(struct device *dev, const struct max310x_devtype *devty
 		regmap_write(regmaps[i], MAX310X_MODE1_REG, devtype->mode1);
 	}
 
-	ret = max310x_set_ref_clk(dev, s, freq, &uartclk, xtal);
-	if (ret < 0)
-		goto out_uart;
+#define DEBUG_MODE DEBUG_MODE_LOOP
 
-	dev_dbg(dev, "Reference clock set to %i Hz\n", uartclk);
+	{
+		unsigned int forig;
+		unsigned int valdbg;
+
+#if (DEBUG_MODE == DEBUG_MODE_TABLE)
+		const unsigned int ft[] = {
+			1843200,  3276800,  12000000, 24000000,
+			32768000, 34000016, 34000017, 34000467,
+			34010001, 34999999, 35000000,
+		};
+
+		for (i = 0; i < ARRAY_SIZE(ft); i++) {
+			freq = ft[i];
+#else
+		for (freq = fmin; freq <= fmax; freq += 10) {
+#endif
+			forig = max310x_set_ref_clk_original(dev, s, freq, xtal);
+			(void) regmap_read(s->regmap, MAX310X_PLLCFG_REG, &valdbg);
+
+			ret = max310x_set_ref_clk(dev, s, freq, &uartclk, xtal);
+			if (ret < 0)
+				goto out_uart;
+
+			//if (freq == 1000000)
+			//	uartclk += 1; /* Error test validation */
+
+			if ((freq % 1000000) == 0)
+				dev_warn(dev, "modulo freq = %d\n", (unsigned int) freq);
+
+			if (forig != uartclk) {
+				dev_warn(dev, "mismatch for %d\n", (unsigned int) freq);
+				dev_warn(dev, "  orig:\n");
+				dev_warn(dev, "    fref:    %d\n", forig);
+				dev_warn(dev, "    plldiv:  %d\n", (u8) FIELD_GET(MAX310X_PLLCFG_PREDIV_MASK, valdbg));
+				dev_warn(dev, "    pllmult: %d\n", (u8) FIELD_GET(MAX310X_PLLCFG_PLLFACTOR_MASK, valdbg));
+				dev_warn(dev, "  new:\n");
+				dev_warn(dev, "    fref: %d\n", uartclk);
+				(void) regmap_read(s->regmap, MAX310X_PLLCFG_REG, &valdbg);
+				dev_warn(dev, "    plldiv:  %d\n", (u8) FIELD_GET(MAX310X_PLLCFG_PREDIV_MASK, valdbg));
+				dev_warn(dev, "    pllmult: %d\n", (u8) FIELD_GET(MAX310X_PLLCFG_PLLFACTOR_MASK, valdbg));
+				ret = -ERANGE;
+				goto out_uart;
+                        }
+		}
+	}
+
+	dev_warn(dev, "Reference clock set to %i Hz\n", uartclk);
 
 	for (i = 0; i < devtype->nr; i++) {
 		unsigned int line;
