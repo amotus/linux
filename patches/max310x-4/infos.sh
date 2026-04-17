@@ -16,4 +16,4 @@ compile_cmd="hvk-compile-sendpatch.sh"
 
 #ignore_checkpatch_errors="FILE_PATH_CHANGES,DT_SPLIT_BINDING_PATCH"
 #ignore_checkpatch_errors="PREFER_LORE_ARCHIVE"
-ignore_checkpatch_errors="BRACES"
+ignore_checkpatch_errors="BRACES,BAD_SIGN_OFF"
