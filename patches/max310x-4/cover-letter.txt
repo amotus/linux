@@ -1,16 +1,21 @@
 Hello,
-this patch series brings a few fixes in the probing of the max310x driver.
-
-Patches 1 to 3 could be merged if deemed necessary and to facilitate stable
-kernel backporting.
+this patch series brings a few improvements and cleanups to the max310x
+driver.
 
 Note that I do not have access to a board with an actual max310x IC on it,
 but I have tested it by using i2c-stub to simulate the four ports on a
 virtual max14830 device.
 
+Tests for patch "serial: max310x: use regmap_read_poll_timeout() for busy
+wait":
+Tested by setting the initial register values to 0x00, then loading the
+driver with a (temporary) modified delay of 10s and using i2c-stub
+to set register values to 0x01 after 5 seconds. Also tested by leaving
+register to 0x00 and confirming the timout is properly handled.
+
+Tests for reference clock computations:
+Tested all possible frequencies from 5KHz to 35MHz in 1z increment
+(osc mode) and comparing the resulting reference clock between the original
+code and the new one, again using i2c-stub.
+
 Thank you.
-
-Link: [v1] https://lore.kernel.org/all/20240116213001.3691629-1-hugo@hugovil.com
-
-Changes for V2:
-- ...
