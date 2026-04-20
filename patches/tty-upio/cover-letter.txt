@@ -1,15 +1,38 @@
 Hello,
 this patch series add a new I/O type for serial devices on a SPI/I2C bus.
 
-These changes are based on suggestions made by Ilpo Järvinen
-following this discussion:
+These changes are based on a suggestion [1] made by Ilpo Järvinen during
+past sc16is7xx driver patches review.
 
-https://lore.kernel.org/lkml/2936e18f-44ea-faed-9fa0-2ddefe7c3194@linux.intel.com/raw
+I decided to use UPIO_BUS/SERIAL_IO_BUS names. But maybe other names would be
+more appropriate/descriptive?
 
-I did not test the changes on a real SC16is7xx using the I2C interface. But
-I slighly modified the driver to be able to simulate an I2C device using
-i2c-stub. I was then able to instantiate a virtual I2C device without
-disturbing existing connection/communication between real SPI devices on
-/dev/ttySC0 and /dev/ttySC2 (using a loopback cable).
+   UPIO_SER    / SERIAL_IO_SER    /* Strange? */
+   UPIO_REGMAP / SERIAL_IO_REGMAP
+   ...
+
+Tested on a imx6 board with two SC16is752 using SPI mode, and a dummy
+device-tree entry for a MAX3100:
+  dmesg -t | grep "base_baud"
+    2020000.serial: ttymxc0 at MMIO 0x2020000 (irq = 197, base_baud = 5000000) is a IMX
+    21e8000.serial: ttymxc1 at MMIO 0x21e8000 (irq = 198, base_baud = 5000000) is a IMX
+    spi1.0: ttySC0 (irq = 165, base_baud = 1500000) is a SC16IS752
+    spi1.0: ttySC1 (irq = 165, base_baud = 1500000) is a SC16IS752
+    spi3.0: ttySC2 (irq = 37, base_baud = 1500000) is a SC16IS752
+    spi3.0: ttySC3 (irq = 37, base_baud = 1500000) is a SC16IS752
+    spi3.1: ttyMAX0 (irq = 0, base_baud = 0) is a MAX3100
+Note that before these patches, max3100 silently failed in uart_configure_port()
+because membase/iobase/mapbase were zero.
+
+For max310x and SC16is7xx in i2c mode, tested only that driver is properly
+registered by using i2c-stub.
+
+Also tested on a custom board with a Renesas RZ/G2L cpu (sh-sci driver) to
+confirm there is no regression:
+  dmesg -t | grep "base_baud"
+    1004b800.serial: ttySC0 at MMIO 0x1004b800 (irq = 35, base_baud = 0) is a scif
+    1004bc00.serial: ttySC1 at MMIO 0x1004bc00 (irq = 40, base_baud = 0) is a scif
 
 Thank you.
+
+[1] https://lore.kernel.org/lkml/2936e18f-44ea-faed-9fa0-2ddefe7c3194@linux.intel.com/raw
