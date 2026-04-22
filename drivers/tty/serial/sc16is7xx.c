@@ -1483,7 +1483,6 @@ static int sc16is7xx_setup_channel(struct sc16is7xx_one *one, int i,
 	port->rs485_config = sc16is7xx_config_rs485;
 	port->rs485_supported = sc16is7xx_rs485_supported;
 	port->ops	= &sc16is7xx_ops;
-	one->old_mctrl	= 0;
 
 	mutex_init(&one->lock);
 
