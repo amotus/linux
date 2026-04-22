@@ -1528,7 +1528,7 @@ static int sc16is7xx_setup_channel(struct sc16is7xx_one *one, int i,
 int sc16is7xx_probe(struct device *dev, const struct sc16is7xx_devtype *devtype,
 		    struct regmap *regmaps[], int irq)
 {
-	unsigned long freq = 0, *pfreq = dev_get_platdata(dev);
+	unsigned long freq = 0;
 	unsigned int val;
 	u32 uartclk = 0;
 	int i, ret;
@@ -1557,13 +1557,13 @@ int sc16is7xx_probe(struct device *dev, const struct sc16is7xx_devtype *devtype,
 	if (!s)
 		return -ENOMEM;
 
-	/* Always ask for fixed clock rate from a property. */
-	device_property_read_u32(dev, "clock-frequency", &uartclk);
-
 	s->polling = (irq <= 0);
 	if (s->polling)
 		dev_dbg(dev,
 			"No interrupt pin definition, falling back to polling mode\n");
+
+	/* Always ask for fixed clock rate from a property. */
+	device_property_read_u32(dev, "clock-frequency", &uartclk);
 
 	s->clk = devm_clk_get_optional(dev, NULL);
 	if (IS_ERR(s->clk))
@@ -1575,6 +1575,8 @@ int sc16is7xx_probe(struct device *dev, const struct sc16is7xx_devtype *devtype,
 
 	freq = clk_get_rate(s->clk);
 	if (freq == 0) {
+		unsigned long *pfreq = dev_get_platdata(dev);
+
 		if (uartclk)
 			freq = uartclk;
 		if (pfreq)
