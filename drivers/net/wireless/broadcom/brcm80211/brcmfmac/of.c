@@ -140,7 +140,7 @@ int brcmf_of_probe(struct device *dev, enum brcmf_bus_type bus_type,
 
 		len = strscpy(settings->regdomain, domain, BRCMF_REGDOMAIN_LEN);
 		if (len < 0)
-			return ERR_PTR(-ENOSPC);
+			return -ENOSPC;
 	}
 
 	if (of_property_read_u32(np, "brcm,drive-strength", &val) == 0)
